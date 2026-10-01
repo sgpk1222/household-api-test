@@ -24,19 +24,24 @@
 
 用例和执行结果在 docs/测试用例-新增居民.xlsx（身份证号那一列我设成了文本格式，不然 Excel 会把它变成科学计数法）。
 
+**接口测试**：用 Postman 建了 10 个请求，覆盖登录、查询、搜索、新增（含文件上传）、删除，通过 Cookie 保持处理登录态。其中 4 个是专门验证「不该成功的时候有没有成功」的反向用例。Collection 和环境变量都在 postman/ 目录，导入就能跑。
+
+**数据核对**：写了一组 SQL 到数据库里核对接口的结果。接口返回 200 只代表请求被处理了，不代表数据写对了——字段错位、日期格式变了这些，在页面上看不出来。见 docs/数据验证SQL.md。
+
 ## 发现的问题
 
-32 条用例里 18 条不符合预期。归纳之后是 5 个缺陷：
+32 条用例里 18 条不符合预期。后来用 Postman 做反向用例时又发现一个，一共 6 个缺陷：
 
 | 编号 | 问题 | 严重程度 |
 |---|---|---|
+| BUG-006 | 未登录可以直接访问和删除管理端接口 | 严重 |
 | BUG-001 | 姓名能存进脚本，列表页会执行弹窗 | 严重 |
 | BUG-002 | 身份证号完全不校验格式 | 严重 |
 | BUG-003 | 姓名首尾的空格被原样存进数据库 | 一般 |
 | BUG-004 | 姓名只填一个空格也能保存 | 一般 |
 | BUG-005 | 出错时把数据库报错原文显示给用户 | 一般 |
 
-详细记录在 docs/缺陷记录.md。
+详细记录在 docs/缺陷记录.md。其中 4 条可以在 Postman 里直接复现，见 postman/ 目录里带「【反向】」前缀的那几个请求。
 
 ## 目录
 
@@ -46,14 +51,15 @@ household-api-test/
 ├── docs/
 │   ├── 接口清单.md
 │   ├── 测试用例-新增居民.xlsx
-│   └── 缺陷记录.md
-├── postman/     Postman Collection（还没做）
+│   ├── 缺陷记录.md
+│   └── 数据验证SQL.md
+├── postman/     Postman Collection 和环境变量
 └── tests/       pytest 接口自动化（还没做）
 ```
 
 ## 后面要做的
 
-- [ ] 用 Postman 把 16 个接口过一遍，导出 Collection
+- [x] 用 Postman 过一遍接口，导出 Collection
 - [ ] 用 pytest + requests 写接口自动化
 - [ ] 加 Allure 报告
 - [ ] 配 GitHub Actions，提交后自动跑
@@ -65,3 +71,5 @@ household-api-test/
 1. 把被测系统部署到本地 Tomcat 9，访问路径是 /HouseholdSystem
 2. 在 MySQL 里建 household_db 库，把表结构和基础数据导入
 3. 确认 http://localhost:8080/HouseholdSystem/toLogin 能正常打开
+
+想看接口测试的话：把 postman/ 目录下那两个 JSON 文件导入 Postman，选中 `HouseholdSystem-Local` 环境，就能直接跑。
