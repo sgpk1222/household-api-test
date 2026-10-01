@@ -1,0 +1,197 @@
+{
+  "info": {
+    "_postman_id": "549ac86b-9a62-462c-a7d8-cb67ac8e448b",
+    "name": "HouseholdSystem",
+    "description": "### Welcome to Postman! This is your first collection.\n\nCollections are your starting point for building and testing APIs. You can use this one to:\n\n• Group related requests  \n• Test your API in real-world scenarios  \n• Document and share your requests\n\nUpdate the name and overview whenever you’re ready to make it yours.\n\n[Learn more about Postman Collections.](https://learning.postman.com/docs/collections/collections-overview/)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "58651150",
+    "_collection_link": "https://go.postman.co/collection/58651150-549ac86b-9a62-462c-a7d8-cb67ac8e448b?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "POST 管理员登录",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "username",
+              "value": "admin"
+            },
+            {
+              "key": "password",
+              "value": "123456"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GET 居民列表",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/resident/list",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "resident",
+            "list"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GET 居民列表-按姓名搜索",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/resident/list?searchName=测试张三",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "resident",
+            "list"
+          ],
+          "query": [
+            {
+              "key": "searchName",
+              "value": "测试张三"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GET 居民详情",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/resident/toEdit?rId=1",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "resident",
+            "toEdit"
+          ],
+          "query": [
+            {
+              "key": "rId",
+              "value": "1"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "POST 新增居民",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "name",
+              "value": "测试张三",
+              "type": "text"
+            },
+            {
+              "key": "idCard",
+              "value": "339988770000000091",
+              "type": "text"
+            },
+            {
+              "key": "gender",
+              "value": "男",
+              "type": "text"
+            },
+            {
+              "key": "birthday",
+              "value": "2000-01-01",
+              "type": "text"
+            },
+            {
+              "key": "phone",
+              "value": "13000000000",
+              "type": "text"
+            },
+            {
+              "key": "address",
+              "value": "测试地址",
+              "type": "text"
+            },
+            {
+              "key": "hType",
+              "value": "城市家庭户口",
+              "type": "text"
+            },
+            {
+              "key": "file",
+              "type": "file",
+              "src": [
+                "/D:/stu/eclipse/workspace/HouseholdSystem/src/main/webapp/upload/default.jpg"
+              ]
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/resident/add",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "resident",
+            "add"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GET 删除居民",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/resident/delete?rId=46",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "resident",
+            "delete"
+          ],
+          "query": [
+            {
+              "key": "rId",
+              "value": "46"
+            }
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
