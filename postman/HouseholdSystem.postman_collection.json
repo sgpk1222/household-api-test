@@ -57,6 +57,60 @@
       "response": []
     },
     {
+      "name": "【反向】未登录删除居民",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://127.0.0.1:8080/HouseholdSystem/resident/delete?rId=999999",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8080",
+          "path": [
+            "HouseholdSystem",
+            "resident",
+            "delete"
+          ],
+          "query": [
+            {
+              "key": "rId",
+              "value": "999999"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "【反向】未登录访问居民列表",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://127.0.0.1:8080/HouseholdSystem/resident/list",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8080",
+          "path": [
+            "HouseholdSystem",
+            "resident",
+            "list"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
       "name": "GET 居民列表-按姓名搜索",
       "request": {
         "method": "GET",
@@ -170,12 +224,142 @@
       "response": []
     },
     {
+      "name": "【反向】新增居民-身份证17位",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "name",
+              "value": "测试李四",
+              "type": "text"
+            },
+            {
+              "key": "idCard",
+              "value": "33998877000000001",
+              "type": "text"
+            },
+            {
+              "key": "gender",
+              "value": "男",
+              "type": "text"
+            },
+            {
+              "key": "birthday",
+              "value": "2000-01-01",
+              "type": "text"
+            },
+            {
+              "key": "phone",
+              "value": "13000000000",
+              "type": "text"
+            },
+            {
+              "key": "address",
+              "value": "测试地址",
+              "type": "text"
+            },
+            {
+              "key": "hType",
+              "value": "城市家庭户口",
+              "type": "text"
+            },
+            {
+              "key": "file",
+              "type": "file",
+              "src": [
+                "/D:/stu/eclipse/workspace/HouseholdSystem/src/main/webapp/upload/default.jpg"
+              ]
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/resident/add",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "resident",
+            "add"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "【反向】新增居民-姓名注入脚本",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "name",
+              "value": "<script>alert(1)</script>",
+              "type": "text"
+            },
+            {
+              "key": "idCard",
+              "value": "339988770000000092",
+              "type": "text"
+            },
+            {
+              "key": "gender",
+              "value": "男",
+              "type": "text"
+            },
+            {
+              "key": "birthday",
+              "value": "2000-01-01",
+              "type": "text"
+            },
+            {
+              "key": "phone",
+              "value": "13000000000",
+              "type": "text"
+            },
+            {
+              "key": "address",
+              "value": "测试地址",
+              "type": "text"
+            },
+            {
+              "key": "hType",
+              "value": "城市家庭户口",
+              "type": "text"
+            },
+            {
+              "key": "file",
+              "type": "file",
+              "src": [
+                "/D:/stu/eclipse/workspace/HouseholdSystem/src/main/webapp/upload/default.jpg"
+              ]
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/resident/add",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "resident",
+            "add"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
       "name": "GET 删除居民",
       "request": {
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "{{baseUrl}}/resident/delete?rId=46",
+          "raw": "{{baseUrl}}/resident/delete?rId=47",
           "host": [
             "{{baseUrl}}"
           ],
@@ -186,7 +370,7 @@
           "query": [
             {
               "key": "rId",
-              "value": "46"
+              "value": "47"
             }
           ]
         }
