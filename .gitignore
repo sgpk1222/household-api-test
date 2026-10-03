@@ -12,6 +12,12 @@ allure-report/
 report.html
 *.log
 
+# 示例日志要提交，上面那条 *.log 把它排除了，这里单独放行
+!tools/sample_access.log
+
+# 脚本运行输出（每次跑都会重新生成，不需要进仓库）
+log_report.txt
+
 # IDE
 .idea/
 .vscode/
