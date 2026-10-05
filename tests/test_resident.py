@@ -2,6 +2,16 @@ import pytest
 import requests
 import re
 
+def test_删除不存在的记录不会崩溃(admin_session, base_url):
+    r = admin_session.get(f"{base_url}/resident/delete",
+                       params={"rId": 999999},
+                       allow_redirects=False)
+
+    # 期望：正常处理完跳回列表页，而不是抛 500 服务器错误
+    assert r.status_code == 302, f"删除不存在的记录时出错了，实际状态码 {r.status_code}"
+
+
+
 def test_管理员能看到居民列表(admin_session, base_url):
     r = admin_session.get(f"{base_url}/resident/list")
     assert r.status_code == 200
