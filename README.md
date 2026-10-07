@@ -1,5 +1,7 @@
 # 户籍管理系统 接口测试
 
+![接口自动化测试](https://github.com/sgpk1222/household-api-test/actions/workflows/tests.yml/badge.svg)
+
 这是我做的一个接口测试练习。被测系统是一个户籍管理系统，我把它部署在本地 Tomcat 上，拿它来练测试流程。
 
 ## 被测系统
