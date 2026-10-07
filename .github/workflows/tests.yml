@@ -30,24 +30,55 @@ jobs:
     name: 接口测试（MySQL + 被测系统）
     runs-on: ubuntu-latest
     timeout-minutes: 20
+
+    # 自己用容器起一个 MySQL，密码由我们在配置里指定。
+    # 不用 runner 预装的那个——它的密码是镜像预设的，不同版本还不一样，只能靠猜。
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --default-authentication-plugin=mysql_native_password
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: 启动 MySQL 并导入数据库
+      - name: 导入数据库
         run: |
-          sudo systemctl start mysql
-          sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root'; FLUSH PRIVILEGES;"
-          mysql -uroot -proot < db/household_db.sql
+          mysql -h127.0.0.1 -P3306 -uroot -proot < db/household_db.sql
           echo "数据库初始化完成，居民数："
-          mysql -uroot -proot -N -e "SELECT COUNT(*) FROM household_db.resident;"
+          mysql -h127.0.0.1 -P3306 -uroot -proot -N -e "SELECT COUNT(*) FROM household_db.resident;"
 
       - name: 下载并解压 Tomcat
         run: |
-          curl -sSL -o /tmp/tomcat.tar.gz \
-            https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.109/bin/apache-tomcat-9.0.109.tar.gz
+          set -e
+          TOMCAT_VERSION=9.0.109
+          BASE=apache-tomcat-${TOMCAT_VERSION}
+          # 主站和 CDN 各试一次，避免单个源抽风
+          for url in \
+            "https://archive.apache.org/dist/tomcat/tomcat-9/v${TOMCAT_VERSION}/bin/${BASE}.tar.gz" \
+            "https://dlcdn.apache.org/tomcat/tomcat-9/v${TOMCAT_VERSION}/bin/${BASE}.tar.gz"
+          do
+            echo "尝试下载：$url"
+            if curl -fsSL --retry 3 --retry-delay 2 -o /tmp/tomcat.tar.gz "$url"; then
+              echo "下载成功"
+              break
+            fi
+          done
+          test -s /tmp/tomcat.tar.gz || { echo "Tomcat 下载失败，两个源都不通"; exit 1; }
+
           sudo mkdir -p /opt/tomcat
           sudo tar -xzf /tmp/tomcat.tar.gz -C /opt/tomcat --strip-components=1
           sudo chmod +x /opt/tomcat/bin/*.sh
+          echo "Tomcat 目录内容："
+          ls /opt/tomcat/bin/catalina.sh
 
       - name: 部署被测系统并启动
         run: |
