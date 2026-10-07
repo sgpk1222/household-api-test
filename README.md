@@ -48,28 +48,64 @@
 ```
 household-api-test/
 ├── README.md
+├── requirements.txt            依赖清单
+├── pytest.ini                  pytest 配置
+├── .github/workflows/          GitHub Actions 配置
+├── db/
+│   └── household_db.sql        数据库初始化脚本
 ├── docs/
 │   ├── 接口清单.md
 │   ├── 测试用例-新增居民.xlsx
 │   ├── 缺陷记录.md
 │   └── 数据验证SQL.md
-├── postman/     Postman Collection 和环境变量
-└── tests/       pytest 接口自动化（还没做）
+├── postman/                    Postman Collection 和环境变量
+├── sut/
+│   └── household-system.war    被测系统的可部署包（CI 用它把系统跑起来）
+├── tests/                      pytest 接口自动化测试
+└── tools/                      日志分析脚本
 ```
 
-## 后面要做的
+## 自动化测试
 
-- [x] 用 Postman 过一遍接口，导出 Collection
-- [ ] 用 pytest + requests 写接口自动化
-- [ ] 加 Allure 报告
-- [ ] 配 GitHub Actions，提交后自动跑
+用 pytest + requests 写的接口自动化测试，跑起来是：
+
+```
+pytest tests/ -v --html=report.html --self-contained-html
+```
+
+当前的执行结果：**10 条通过，5 条标记为 xfail**（对应 5 个已知缺陷，见 `docs/缺陷记录.md`）。
+
+`xfail` 的含义是「我断言系统应该拒绝，但系统目前没有拒绝」。**哪天开发把缺陷修了，
+这些用例会变成 xpass**，那就提醒你该更新缺陷记录了。
+
+## 持续集成
+
+每次 push 到 main 分支，GitHub Actions 会自动跑一遍：启动 MySQL、导入数据库脚本、
+下载 Tomcat、部署被测系统、执行全部测试，并把 HTML 报告作为附件上传。
+
+配置在 `.github/workflows/tests.yml`，分两个作业：
+
+| 作业 | 内容 | 需要外部依赖吗 |
+|---|---|---|
+| 单元测试 | 日志分析脚本的单元测试 | 不需要 |
+| 接口测试 | 全量接口测试 + HTML 报告 | 需要 MySQL 和被测系统 |
+
+## 后面可以做的
+
+- [ ] 补充居民端（注册、登录、个人档案）的测试用例
+- [ ] 补充搜索、统计分析等其他模块的用例
+- [ ] 被测系统修复缺陷后，去掉对应的 xfail 标记
 
 ## 怎么复现
 
-这个仓库里没有被测系统的源码。要复现测试环境需要：
+这个仓库里没有被测系统的源码，但带了一份可以部署的包：`sut/household-system.war`。
 
-1. 把被测系统部署到本地 Tomcat 9，访问路径是 /HouseholdSystem
-2. 在 MySQL 里建 household_db 库，把表结构和基础数据导入
-3. 确认 http://localhost:8080/HouseholdSystem/toLogin 能正常打开
+**本地跑测试：**
 
-想看接口测试的话：把 postman/ 目录下那两个 JSON 文件导入 Postman，选中 `HouseholdSystem-Local` 环境，就能直接跑。
+1. 启动 MySQL，导入数据库：`mysql -uroot -p < db/household_db.sql`
+2. 把 `sut/household-system.war` 部署到 Tomcat 9，访问路径是 `/HouseholdSystem`
+3. 确认 `http://localhost:8080/HouseholdSystem/toLogin` 能打开
+4. `pip install -r requirements.txt`，然后 `pytest tests/ -v`
+
+**只看接口测试的 Postman 版本**：把 `postman/` 下那两个 JSON 导入 Postman，
+选中 `HouseholdSystem-Local` 环境，就能直接跑。

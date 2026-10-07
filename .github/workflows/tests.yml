@@ -1,0 +1,93 @@
+name: 接口自动化测试
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  # 作业一：单元测试。不需要任何外部依赖，几十秒就能跑完。
+  unit-test:
+    name: 单元测试（日志分析脚本）
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 安装依赖
+        run: pip install -r requirements.txt
+
+      - name: 跑单元测试
+        run: pytest tools/test_log_report.py -v
+
+  # 作业二：接口测试。需要数据库和被测系统，所以要在 CI 里把环境搭起来。
+  api-test:
+    name: 接口测试（MySQL + 被测系统）
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 启动 MySQL 并导入数据库
+        run: |
+          sudo systemctl start mysql
+          sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root'; FLUSH PRIVILEGES;"
+          mysql -uroot -proot < db/household_db.sql
+          echo "数据库初始化完成，居民数："
+          mysql -uroot -proot -N -e "SELECT COUNT(*) FROM household_db.resident;"
+
+      - name: 下载并解压 Tomcat
+        run: |
+          curl -sSL -o /tmp/tomcat.tar.gz \
+            https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.109/bin/apache-tomcat-9.0.109.tar.gz
+          sudo mkdir -p /opt/tomcat
+          sudo tar -xzf /tmp/tomcat.tar.gz -C /opt/tomcat --strip-components=1
+          sudo chmod +x /opt/tomcat/bin/*.sh
+
+      - name: 部署被测系统并启动
+        run: |
+          sudo rm -rf /opt/tomcat/webapps/ROOT
+          sudo cp sut/household-system.war /opt/tomcat/webapps/HouseholdSystem.war
+          sudo /opt/tomcat/bin/startup.sh
+
+      - name: 等待被测系统就绪
+        run: |
+          for i in $(seq 1 40); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" \
+              http://localhost:8080/HouseholdSystem/toLogin || true)
+            echo "第 $i 次探测，状态码：$code"
+            if [ "$code" = "200" ]; then
+              echo "被测系统已就绪"
+              exit 0
+            fi
+            sleep 3
+          done
+          echo "===== 启动超时，打印 Tomcat 日志 ====="
+          sudo tail -n 80 /opt/tomcat/logs/catalina.out || true
+          exit 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 安装依赖
+        run: pip install -r requirements.txt
+
+      - name: 跑接口测试并生成报告
+        run: pytest tests/ -v --html=report.html --self-contained-html
+
+      - name: 上传测试报告
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: 接口测试报告
+          path: report.html
+
+      - name: 失败时打印被测系统日志
+        if: failure()
+        run: sudo tail -n 120 /opt/tomcat/logs/catalina.out || true
