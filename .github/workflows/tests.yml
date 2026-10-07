@@ -41,7 +41,6 @@ jobs:
         ports:
           - 3306:3306
         options: >-
-          --default-authentication-plugin=mysql_native_password
           --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
           --health-interval=10s
           --health-timeout=5s
@@ -50,8 +49,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: 导入数据库
+      - name: 调整认证方式并导入数据库
         run: |
+          # MySQL 8.0 默认用 caching_sha2_password 认证。项目里的 JDBC 驱动是
+          # mysql-connector-java 8.0.18，在非 TLS 连接下连这种认证会要求
+          # Public Key Retrieval，默认是关闭的。所以先把 root 改成经典的
+          # mysql_native_password，驱动就能直接连上。
+          mysql -h127.0.0.1 -P3306 -uroot -proot -e "ALTER USER IF EXISTS 'root'@'%' IDENTIFIED WITH mysql_native_password BY 'root'; ALTER USER IF EXISTS 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root'; FLUSH PRIVILEGES;"
+          echo "认证方式已调整"
+
           mysql -h127.0.0.1 -P3306 -uroot -proot < db/household_db.sql
           echo "数据库初始化完成，居民数："
           mysql -h127.0.0.1 -P3306 -uroot -proot -N -e "SELECT COUNT(*) FROM household_db.resident;"
